@@ -1,3 +1,4 @@
+// src/auth/AuthContext.jsx
 import { createContext, useContext, useEffect, useState } from "react";
 import { API } from "../api/ApiContext";
 
@@ -6,7 +7,7 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(sessionStorage.getItem("token"));
   const [user, setUser] = useState(
-    JSON.parse(sessionStorage.getItem("user") || "null")
+    JSON.parse(sessionStorage.getItem("user")) || null
   );
 
   useEffect(() => {
@@ -15,13 +16,15 @@ export function AuthProvider({ children }) {
     } else {
       sessionStorage.removeItem("token");
     }
+  }, [token]);
 
+  useEffect(() => {
     if (user) {
       sessionStorage.setItem("user", JSON.stringify(user));
     } else {
       sessionStorage.removeItem("user");
     }
-  }, [token, user]);
+  }, [user]);
 
   const register = async (credentials) => {
     const response = await fetch(API + "/auth/signup", {
@@ -29,7 +32,6 @@ export function AuthProvider({ children }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(credentials),
     });
-
     const result = await response.json();
     if (!response.ok) throw Error(result.error || "Signup failed");
 
@@ -43,7 +45,6 @@ export function AuthProvider({ children }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(credentials),
     });
-
     const result = await response.json();
     if (!response.ok) throw Error(result.error || "Login failed");
 
@@ -59,7 +60,6 @@ export function AuthProvider({ children }) {
   };
 
   const value = { token, user, register, login, logout };
-
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
