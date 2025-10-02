@@ -2,34 +2,33 @@ import { useState } from "react";
 import useMutation from "../api/useMutation";
 
 /**
- * OptionForm lets the user add a new choice to a page.
- * It uses useMutation to send a POST to /options.
+ * OptionForm allows adding a new option to a page.
  */
-export default function OptionForm({ pageId }) {
-  const [error, setError] = useState(null);
+export default function OptionForm({ pageId, onCreated }) {
+  const { mutate, loading, error } = useMutation("POST", `/options`, [`page-${pageId}`]);
+  const [optionText, setOptionText] = useState("");
 
-  // Hook to handle adding a new option
-  const { mutate, loading } = useMutation("POST", "/options", [`page-${pageId}`]);
-
-  const onSubmit = async (formData) => {
-    const optionText = formData.get("optionText");
-
-    try {
-      const result = await mutate({ pageId, optionText });
-      if (!result) throw Error("Failed to add option");
-    } catch (e) {
-      setError(e.message);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const success = await mutate({ pageId, optionText });
+    if (success) {
+      setOptionText("");
+      onCreated?.();
     }
   };
 
   return (
-    <form action={onSubmit}>
+    <form onSubmit={handleSubmit}>
       <label>
-        Add a new option
-        <input type="text" name="optionText" required />
+        New Option
+        <input
+          value={optionText}
+          onChange={(e) => setOptionText(e.target.value)}
+          required
+        />
       </label>
-      <button disabled={loading}>Add Option</button>
-      {error && <output style={{ color: "red" }}>{error}</output>}
+      <button type="submit" disabled={loading}>Add Option</button>
+      {error && <p>Error: {error}</p>}
     </form>
   );
 }

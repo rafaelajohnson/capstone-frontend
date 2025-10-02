@@ -1,37 +1,33 @@
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import useQuery from "../api/useQuery";
-import OptionForm from "./OptionForm";
 
 /**
- * PageDetail shows a single page of a story with its options.
- * It also includes the OptionForm so the user can add new choices.
+ * PageDetail shows a single page’s text and its available options.
  */
 export default function PageDetail() {
-  const { id } = useParams(); // page id from the URL
-
-  // Grab the page and its options from the API
+  const { id } = useParams();
   const { data, loading, error } = useQuery(`/pages/${id}/full`, `page-${id}`);
 
   if (loading) return <p>Loading page...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
-  if (!data) return <p>No page found.</p>;
+  if (error) return <p>Error: {error}</p>;
+  if (!data) return <p>Page not found.</p>;
 
   const { page, options } = data;
 
   return (
     <section>
-      <h2>Page {page.page_number}</h2>
       <p>{page.text}</p>
-
-      <h3>Options</h3>
+      <h3>Choose an option:</h3>
       <ul>
         {options.map((opt) => (
-          <li key={opt.id}>{opt.option_text}</li>
+          <li key={opt.id}>
+            {/* Link would point to nextPageId when backend supports it */}
+            <Link to={`/pages/${opt.next_page_id || id}`}>
+              {opt.option_text}
+            </Link>
+          </li>
         ))}
       </ul>
-
-      {/* Add form for adding a new option to this page */}
-      <OptionForm pageId={page.id} />
     </section>
   );
 }
