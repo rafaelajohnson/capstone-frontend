@@ -1,30 +1,35 @@
-import { Link } from "react-router-dom";
+// StoriesList.jsx
+// This page fetches all stories from the backend and displays them.
+// Each story title links to its detail page.
+
+import { Link } from "react-router";
 import useQuery from "../api/useQuery";
 
-/**
- * StoryList fetches all stories from the backend and displays them.
- * Each story links to its detail page.
- */
-export default function StoryList() {
-  // Grab the data using our query hook
+export default function StoriesList() {
+  // useQuery automatically calls the API and keeps track of loading/errors
   const { data: stories, loading, error } = useQuery("/stories", "stories");
 
   if (loading) return <p>Loading stories...</p>;
-  if (error) return <p>Error: {error}</p>;
-  if (!stories?.length) return <p>No stories found. Try creating one!</p>;
+  if (error) return <p style={{ color: "red" }}>Error: {error}</p>;
+  if (!stories || stories.length === 0) return <p>No stories yet.</p>;
 
   return (
     <section>
-      <h1>Stories</h1>
-      <Link to="/stories/new">+ Create a new story</Link>
+      <h1>All Stories</h1>
       <ul>
         {stories.map((story) => (
           <li key={story.id}>
-            <Link to={`/stories/${story.id}`}>{story.title}</Link> –{" "}
-            <em>{story.topic}</em>
+            <Link to={`/stories/${story.id}`}>
+              <strong>{story.title}</strong>
+            </Link>{" "}
+            <em>({story.topic})</em>
           </li>
         ))}
       </ul>
+
+      <p style={{ marginTop: "1.5rem" }}>
+        <Link to="/stories/new">➕ Create a New Story</Link>
+      </p>
     </section>
   );
 }
