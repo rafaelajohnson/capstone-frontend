@@ -2,31 +2,40 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "./AuthContext";
 
-/** Login form – lets existing users sign in */
+/**
+ * Simple login form that calls our backend's /auth/login route.
+ * If login works, the user gets redirected to the homepage.
+ * If it fails, we show the error message right on the page.
+ */
 export default function Login() {
-  const { login } = useAuth(); // grab login fn from context
-  const navigate = useNavigate(); // redirect after login
-
+  const { login } = useAuth(); // grab login function from context
+  const navigate = useNavigate();
   const [error, setError] = useState(null);
 
-  // called when form is submitted
+  // handle the login form submission
   const onLogin = async (formData) => {
     const username = formData.get("username");
     const password = formData.get("password");
+
     try {
-      await login({ username, password }); // call backend
-      navigate("/"); // send to home page on success
+      // call the login function (this talks to /auth/login)
+      await login({ username, password });
+      navigate("/"); // send user back to home after successful login
     } catch (e) {
-      setError(e.message); // capture error to display
+      // if the backend throws, we catch and show it
+      setError(e.message);
     }
   };
 
   return (
     <>
       <h1>Log in to your account</h1>
+
+      {/* by using form action, React Router handles the form event */}
       <form action={onLogin}>
         <label>
           Username
+          {/* type="text" is fine, "username" isn't a valid input type */}
           <input type="text" name="username" required />
         </label>
         <label>
@@ -34,8 +43,11 @@ export default function Login() {
           <input type="password" name="password" required />
         </label>
         <button>Login</button>
+        {/* show errors inline, makes it clear to the user what went wrong */}
         {error && <output>{error}</output>}
       </form>
+
+      {/* link to register page in case user doesn't have an account */}
       <Link to="/register">Need an account? Register here.</Link>
     </>
   );

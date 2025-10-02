@@ -1,64 +1,63 @@
-// AuthContext.jsx
+// src/auth/AuthContext.jsx
 import { createContext, useContext, useEffect, useState } from "react";
 import { API } from "../api/ApiContext";
 
-// this is the global context object we’ll use to share auth state
+// create a context to share auth state across the app
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  // I’m storing the token in state so React can re-render when it changes
-  // but I also pull it from sessionStorage so it persists after refresh
+  // token is stored in memory and sessionStorage (so page refresh won’t log you out)
   const [token, setToken] = useState(sessionStorage.getItem("token"));
 
-  // whenever token changes, save it into sessionStorage
-  // (this way if the user refreshes, they’re still logged in)
   useEffect(() => {
+    // anytime token changes, update sessionStorage
     if (token) {
       sessionStorage.setItem("token", token);
     }
   }, [token]);
 
-  // register a new user
-  // hitting the backend’s /auth/signup endpoint
-  // backend returns { user, token } so I grab the token and set it
+  // register a new user with our backend
   const register = async (credentials) => {
     const response = await fetch(API + "/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(credentials),
     });
-    const result = await response.json();
-    if (!response.ok) throw Error(result.error || "Failed to register");
-    setToken(result.token); // save token in state (and sessionStorage via effect)
+
+    const result = await response.json(); // backend always sends JSON
+    if (!response.ok) throw Error(result.error || "Signup failed");
+
+    // backend returns { user, token } → we save just the token
+    setToken(result.token);
   };
 
-  // login is basically the same thing but points at /auth/login
-  // backend gives me a token and I stash it for future requests
+  // login an existing user
   const login = async (credentials) => {
     const response = await fetch(API + "/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(credentials),
     });
+
     const result = await response.json();
-    if (!response.ok) throw Error(result.error || "Failed to login");
+    if (!response.ok) throw Error(result.error || "Login failed");
+
     setToken(result.token);
   };
 
-  // logout just clears the token from both React state + sessionStorage
-  // I don’t need to call the backend for logout because JWTs are stateless
+  // clear token on logout
   const logout = () => {
     setToken(null);
     sessionStorage.removeItem("token");
   };
 
-  // value passed into the provider so all components can use these helpers
+  // expose all auth functions + token to children
   const value = { token, register, login, logout };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-// helper hook so I don’t have to manually call useContext(AuthContext) everywhere
+// custom hook for easy access to auth state
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) throw Error("useAuth must be used within an AuthProvider");

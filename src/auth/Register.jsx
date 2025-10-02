@@ -1,25 +1,29 @@
+// src/auth/Register.jsx
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "./AuthContext";
 
-/** Registration form – lets a new user sign up */
+/**
+ * Registration form that calls our backend's /auth/signup route.
+ * On success we log the user in automatically (store token)
+ * and send them back to the homepage.
+ */
 export default function Register() {
-  const { register } = useAuth(); // grab the register fn from our context
-  const navigate = useNavigate(); // we’ll use this to redirect after signup
-
-  // I’m keeping track of error messages in state, so if backend fails I can show user
+  const { register } = useAuth(); // grab register function from context
+  const navigate = useNavigate();
   const [error, setError] = useState(null);
 
-  // this will run when the form is submitted
+  // handle the register form submission
   const onRegister = async (formData) => {
     const username = formData.get("username");
     const password = formData.get("password");
+
     try {
-      // actually call the backend via our context fn
+      // call register from context (talks to /auth/signup)
       await register({ username, password });
-      navigate("/"); // if success, send them to home page
+      navigate("/"); // redirect home after successful signup
     } catch (e) {
-      // store the error so we can show it below the form
+      // catch API errors and show them inline
       setError(e.message);
     }
   };
@@ -27,7 +31,8 @@ export default function Register() {
   return (
     <>
       <h1>Register for an account</h1>
-      {/* action={onRegister} is a React Router trick so I don’t have to handle preventDefault manually */}
+
+      {/* router form automatically wires formData into our handler */}
       <form action={onRegister}>
         <label>
           Username
@@ -38,10 +43,11 @@ export default function Register() {
           <input type="password" name="password" required />
         </label>
         <button>Register</button>
-        {/* if something went wrong, show error here */}
+        {/* show backend error if something fails (e.g. duplicate username) */}
         {error && <output>{error}</output>}
       </form>
-      {/* link for users who already have an account */}
+
+      {/* give users a way to switch to login if they already have an account */}
       <Link to="/login">Already have an account? Log in here.</Link>
     </>
   );
