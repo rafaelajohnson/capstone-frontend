@@ -4,32 +4,34 @@ import Login from "./auth/Login";
 import Register from "./auth/Register";
 
 // stories-related pages
-import StoryList from "./stories/StoryList";      // shows all stories
-import StoryDetail from "./stories/StoryDetail";  // shows a single story
-import NewStoryForm from "./stories/NewStoryForm"; // form to create a story
-import PageDetail from "./stories/PageDetail";    // shows a page + options
+import StoryList from "./stories/StoryList";
+import StoryDetail from "./stories/StoryDetail";
+import NewStoryForm from "./stories/NewStoryForm";
+import PageDetail from "./stories/PageDetail";
 
 /**
  * App sets up all routes for the frontend.
- * We group everything under <Layout /> so Navbar stays on all pages.
+ * I’m using <Layout> so Navbar + Outlet render on every page.
+ * Each child route below corresponds to a feature we’ve built.
  */
 export default function App() {
   return (
     <Routes>
+      {/* Layout wraps everything with navbar and <Outlet /> */}
       <Route element={<Layout />}>
-        {/* Home */}
+        {/* Home route just shows a placeholder for now */}
         <Route index element={<p>Home page</p>} />
 
         {/* Auth */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
 
-        {/* Stories */}
+        {/* Stories CRUD */}
         <Route path="/stories" element={<StoryList />} />
         <Route path="/stories/new" element={<NewStoryForm />} />
         <Route path="/stories/:id" element={<StoryDetail />} />
 
-        {/* Pages */}
+        {/* Pages inside stories */}
         <Route path="/pages/:id" element={<PageDetail />} />
       </Route>
     </Routes>
