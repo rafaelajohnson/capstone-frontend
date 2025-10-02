@@ -1,0 +1,42 @@
+/* Story list section */
+.story-list {
+    padding: 1rem;
+  }
+  
+  /* Grid layout that adapts */
+  .stories-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr; /* default: 1 column (mobile) */
+  }
+  
+  /* Each story card */
+  .story-card {
+    display: block;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background: #f5f5f5;
+    text-decoration: none;
+    color: black;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+  }
+  
+  .story-card:hover {
+    transform: translateY(-2px);
+  }
+  
+  /* Tablets */
+  @media (min-width: 600px) {
+    .stories-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  /* Desktops */
+  @media (min-width: 900px) {
+    .stories-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  
