@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import { BrowserRouter } from "react-router";
+import { BrowserRouter } from "react-router-dom";
 import { ApiProvider } from "./api/ApiContext.jsx";
 import App from "./App.jsx";
 import { AuthProvider } from "./auth/AuthContext.jsx";
@@ -12,5 +12,5 @@ createRoot(document.getElementById("root")).render(
         <App />
       </BrowserRouter>
     </ApiProvider>
-  </AuthProvider>,
+  </AuthProvider>
 );
