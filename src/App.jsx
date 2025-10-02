@@ -5,6 +5,8 @@ import Register from "./auth/Register";
 import StoriesList from "./stories/StoriesList";
 import StoryDetail from "./stories/StoryDetail";
 import NewStoryForm from "./stories/NewStoryForm";
+import PageDetail from "./pages/PageDetail";
+import OptionForm from "./pages/OptionForm";
 
 export default function App() {
   return (
@@ -19,8 +21,12 @@ export default function App() {
 
         {/* Stories */}
         <Route path="/stories" element={<StoriesList />} />
-        <Route path="/stories/:id" element={<StoryDetail />} />
         <Route path="/stories/new" element={<NewStoryForm />} />
+        <Route path="/stories/:id" element={<StoryDetail />} />
+
+        {/* Pages + Options */}
+        <Route path="/pages/:id" element={<PageDetail />} />
+        <Route path="/pages/:id/options/new" element={<OptionForm />} />
       </Route>
     </Routes>
   );
