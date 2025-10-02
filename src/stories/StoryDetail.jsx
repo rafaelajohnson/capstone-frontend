@@ -2,26 +2,29 @@ import { useParams, Link } from "react-router-dom";
 import useQuery from "../api/useQuery";
 
 /**
- * StoryDetail fetches one story by its ID.
- * We only show the title + topic here, and a link to its first page.
+ * StoryDetail shows info for a single story.
+ * It grabs the `id` from the URL, fetches that story,
+ * and shows basic details with a link to its pages.
  */
 export default function StoryDetail() {
-  const { id } = useParams(); // get :id from the URL
+  const { id } = useParams(); // story id from URL
   const { data: story, loading, error } = useQuery(`/stories/${id}`, `story-${id}`);
 
   if (loading) return <p>Loading story...</p>;
   if (error) return <p>Error: {error}</p>;
-
-  if (!story) return <p>No story found.</p>;
+  if (!story) return <p>Story not found.</p>;
 
   return (
-    <section>
+    <div>
       <h1>{story.title}</h1>
-      <p>Topic: {story.topic}</p>
-      <p>Created at: {new Date(story.created_at).toLocaleString()}</p>
+      <p><strong>Topic:</strong> {story.topic}</p>
+      <p><strong>Created:</strong> {new Date(story.created_at).toLocaleString()}</p>
 
-      {/* link to the first page of this story */}
+      {/* Link to the first page of this story */}
       <Link to={`/pages/${story.id}`}>Start reading</Link>
-    </section>
+
+      <br />
+      <Link to="/stories">← Back to all stories</Link>
+    </div>
   );
 }
