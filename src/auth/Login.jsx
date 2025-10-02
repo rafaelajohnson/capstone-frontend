@@ -2,40 +2,34 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "./AuthContext";
 
-/**
- * Simple login form that calls our backend's /auth/login route.
- * If login works, the user gets redirected to the homepage.
- * If it fails, we show the error message right on the page.
- */
+/** A form that lets an existing user log in */
 export default function Login() {
-  const { login } = useAuth(); // grab login function from context
-  const navigate = useNavigate();
+  const { login } = useAuth(); // hook into auth context to call backend
+  const navigate = useNavigate(); // redirect after successful login
+
   const [error, setError] = useState(null);
 
-  // handle the login form submission
+  // Handle form submission
   const onLogin = async (formData) => {
     const username = formData.get("username");
     const password = formData.get("password");
 
     try {
-      // call the login function (this talks to /auth/login)
+      // Send credentials to backend /auth/login
       await login({ username, password });
-      navigate("/"); // send user back to home after successful login
+      navigate("/"); // go back to homepage once logged in
     } catch (e) {
-      // if the backend throws, we catch and show it
-      setError(e.message);
+      setError(e.message); // show error if login fails
     }
   };
 
   return (
     <>
       <h1>Log in to your account</h1>
-
-      {/* by using form action, React Router handles the form event */}
+      {/* form uses action instead of onSubmit, which plays nice with React Router */}
       <form action={onLogin}>
         <label>
           Username
-          {/* type="text" is fine, "username" isn't a valid input type */}
           <input type="text" name="username" required />
         </label>
         <label>
@@ -43,11 +37,8 @@ export default function Login() {
           <input type="password" name="password" required />
         </label>
         <button>Login</button>
-        {/* show errors inline, makes it clear to the user what went wrong */}
         {error && <output>{error}</output>}
       </form>
-
-      {/* link to register page in case user doesn't have an account */}
       <Link to="/register">Need an account? Register here.</Link>
     </>
   );

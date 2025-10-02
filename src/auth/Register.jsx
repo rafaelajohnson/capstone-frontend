@@ -1,29 +1,23 @@
-// src/auth/Register.jsx
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "./AuthContext";
 
-/**
- * Registration form that calls our backend's /auth/signup route.
- * On success we log the user in automatically (store token)
- * and send them back to the homepage.
- */
+/** A form that lets a new user create an account */
 export default function Register() {
-  const { register } = useAuth(); // grab register function from context
-  const navigate = useNavigate();
+  const { register } = useAuth(); // hook into auth context to register
+  const navigate = useNavigate(); // redirect after registration
+
   const [error, setError] = useState(null);
 
-  // handle the register form submission
   const onRegister = async (formData) => {
     const username = formData.get("username");
     const password = formData.get("password");
 
     try {
-      // call register from context (talks to /auth/signup)
+      // Send credentials to backend /auth/signup
       await register({ username, password });
-      navigate("/"); // redirect home after successful signup
+      navigate("/"); // go back to homepage after signing up
     } catch (e) {
-      // catch API errors and show them inline
       setError(e.message);
     }
   };
@@ -31,8 +25,6 @@ export default function Register() {
   return (
     <>
       <h1>Register for an account</h1>
-
-      {/* router form automatically wires formData into our handler */}
       <form action={onRegister}>
         <label>
           Username
@@ -43,11 +35,8 @@ export default function Register() {
           <input type="password" name="password" required />
         </label>
         <button>Register</button>
-        {/* show backend error if something fails (e.g. duplicate username) */}
         {error && <output>{error}</output>}
       </form>
-
-      {/* give users a way to switch to login if they already have an account */}
       <Link to="/login">Already have an account? Log in here.</Link>
     </>
   );
