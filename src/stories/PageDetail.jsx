@@ -2,11 +2,11 @@ import { useParams } from "react-router-dom";
 import useQuery from "../api/useQuery";
 
 /**
- * PageDetail shows a single story page and all of its options.
- * The pageId comes from the URL (/pages/:id).
+ * PageDetail shows a single page of a story along with its options.
+ * Page id comes from the URL (/pages/:id/full).
  */
 export default function PageDetail() {
-  const { id } = useParams(); // grabs :id from URL
+  const { id } = useParams();
   const { data, loading, error } = useQuery(`/pages/${id}/full`, `page-${id}`);
 
   if (loading) return <p>Loading page...</p>;
