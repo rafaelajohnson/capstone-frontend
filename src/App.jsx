@@ -1,14 +1,14 @@
-// App.jsx
-// This file sets up all routes for the frontend.
-// We include Layout (with Navbar), Auth routes, and Story routes.
+// src/App.jsx
+// App sets up all routes for the frontend.
+// Includes Home, Layout (with Navbar), Auth routes, and Story routes.
 
 import { Route, Routes } from "react-router";
 import Layout from "./layout/Layout";
 import Login from "./auth/Login";
 import Register from "./auth/Register";
+import Home from "./Home";
 
-// new imports
-import Home from "./Home";              // use Home page
+// stories
 import StoriesList from "./stories/StoriesList";
 import StoryDetail from "./stories/StoryDetail";
 import NewStoryForm from "./stories/NewStoryForm";
@@ -18,8 +18,8 @@ export default function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        {/* Home page */}
-        <Route index element={<Home />} />   {/* replace placeholder */}
+        {/* Home page (always visible at root) */}
+        <Route index element={<Home />} />
 
         {/* Auth routes */}
         <Route path="/register" element={<Register />} />
