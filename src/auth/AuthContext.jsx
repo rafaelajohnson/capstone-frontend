@@ -2,14 +2,14 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { API } from "../api/ApiContext";
 
-// Create context so the whole app can share auth state
+// Context is like a box we pass around to share login state across the app
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  // Try to load token from sessionStorage when app starts
+  // Store token in state (and reload from sessionStorage on refresh)
   const [token, setToken] = useState(sessionStorage.getItem("token"));
 
-  // Keep token in sync with sessionStorage (so refresh keeps you logged in)
+  // Whenever token changes, also save/remove it in sessionStorage
   useEffect(() => {
     if (token) {
       sessionStorage.setItem("token", token);
@@ -18,10 +18,7 @@ export function AuthProvider({ children }) {
     }
   }, [token]);
 
-  /**
-   * Register a new user.
-   * Calls POST /auth/signup and stores the returned token.
-   */
+  // --- Register a new user ---
   const register = async (credentials) => {
     const response = await fetch(API + "/auth/signup", {
       method: "POST",
@@ -29,20 +26,19 @@ export function AuthProvider({ children }) {
       body: JSON.stringify(credentials),
     });
 
-    const result = await response.json(); // backend returns { user, token }
+    // backend sends back { user, token }
+    const result = await response.json();
 
     if (!response.ok) {
-      throw Error(result.message || "Failed to register");
+      // if backend sends { error: "..."} we show it
+      throw Error(result.error || "Failed to register");
     }
 
-    // Store only the token, not the whole JSON
+    // save the token so ApiContext can attach it to future requests
     setToken(result.token);
   };
 
-  /**
-   * Log in an existing user.
-   * Calls POST /auth/login and stores the returned token.
-   */
+  // --- Log in existing user ---
   const login = async (credentials) => {
     const response = await fetch(API + "/auth/login", {
       method: "POST",
@@ -50,31 +46,31 @@ export function AuthProvider({ children }) {
       body: JSON.stringify(credentials),
     });
 
+    // backend sends back { user, token }
     const result = await response.json();
 
     if (!response.ok) {
-      throw Error(result.message || "Failed to login");
+      throw Error(result.error || "Failed to login");
     }
 
     setToken(result.token);
   };
 
-  /**
-   * Log out user.
-   * Clears token from state + sessionStorage.
-   */
+  // --- Log out user ---
   const logout = () => {
-    setToken(null);
-    sessionStorage.removeItem("token");
+    setToken(null); // clear from memory
+    sessionStorage.removeItem("token"); // clear from browser storage
   };
 
-  // Expose these values/functions to the app
+  // everything the app needs about auth
   const value = { token, register, login, logout };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  );
 }
 
-// Custom hook for convenience
+// custom hook so components can use auth easily
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) throw Error("useAuth must be used within an AuthProvider");
