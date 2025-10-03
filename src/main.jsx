@@ -1,21 +1,16 @@
-// src/main.jsx
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
-
-import App from "./App";
-import { AuthProvider } from "./auth/AuthContext";
-import { ApiProvider } from "./api/ApiContext";
-import "./index.css";
+import App from "./App.jsx";
+import { AuthProvider } from "./auth/AuthContext.jsx";
+import { ApiProvider } from "./api/ApiContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <BrowserRouter>
+    {/* AuthProvider must come first */}
+    <AuthProvider>
       <ApiProvider>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
+        <App />
       </ApiProvider>
-    </BrowserRouter>
+    </AuthProvider>
   </StrictMode>
 );
