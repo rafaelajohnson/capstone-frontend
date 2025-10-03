@@ -7,7 +7,8 @@ import Layout from "./layout/Layout";
 import Login from "./auth/Login";
 import Register from "./auth/Register";
 
-// new imports for stories
+// new imports
+import Home from "./Home";              // 👈 use your Home page
 import StoriesList from "./stories/StoriesList";
 import StoryDetail from "./stories/StoryDetail";
 import NewStoryForm from "./stories/NewStoryForm";
@@ -18,7 +19,7 @@ export default function App() {
     <Routes>
       <Route element={<Layout />}>
         {/* Home page */}
-        <Route index element={<p>Home page</p>} />
+        <Route index element={<Home />} />   {/* 👈 replace placeholder */}
 
         {/* Auth routes */}
         <Route path="/register" element={<Register />} />
