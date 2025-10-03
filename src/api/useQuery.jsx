@@ -1,41 +1,52 @@
 // src/api/useQuery.jsx
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useApi } from "./ApiContext";
+import { useAuth } from "../auth/AuthContext";
 
 /**
- * Custom hook for GET requests.
- * Makes the call once when the component loads.
- * Re-runs if a mutation invalidates its tag.
- * Returns data, loading, and error so the UI can handle all cases.
+ * useQuery
+ * Small helper hook to fetch data with loading/error states.
+ * @param {string} path - API path (e.g. "/stories")
+ * @param {string} key - cache key (unused for now, could help with invalidation later)
  */
-export default function useQuery(resource, tag) {
-  const { request, provideTag } = useApi();
-
-  const [data, setData] = useState();
-  const [loading, setLoading] = useState(false);
+export default function useQuery(path, key) {
+  const { request } = useApi();
+  const { token } = useAuth(); // ✅ grab token for debugging
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // the actual fetch logic
-  const query = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const result = await request(resource);
-      setData(result); // store data for UI
-    } catch (e) {
-      console.error("Query failed:", e);
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    // register this query with a tag so mutations can refresh it
-    if (tag) provideTag(tag, query);
-    query(); // run immediately on mount
-  }, []);
+    let ignore = false;
 
-  return { data, loading, error, refetch: query };
+    async function fetchData() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        console.log("🔑 useQuery token:", token); // log token
+        console.log("🌍 useQuery fetching:", path);
+
+        const result = await request(path);
+        if (!ignore) {
+          setData(result);
+        }
+      } catch (err) {
+        console.error("❌ Query failed:", err);
+        if (!ignore) {
+          setError(err.message);
+        }
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    }
+
+    fetchData();
+
+    return () => {
+      ignore = true;
+    };
+  }, [path, key, request, token]);
+
+  return { data, loading, error };
 }
