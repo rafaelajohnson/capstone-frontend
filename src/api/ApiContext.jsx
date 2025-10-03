@@ -2,49 +2,51 @@
 import { createContext, useContext } from "react";
 import { useAuth } from "../auth/AuthContext";
 
-// Base API URL from .env
-export const API = import.meta.env.VITE_API_URL || "http://localhost:3000";
-
+// Create a context for API requests
 const ApiContext = createContext();
 
+/**
+ * ApiProvider wraps the app and provides a request() function
+ * that automatically includes the Authorization header if a token exists.
+ */
 export function ApiProvider({ children }) {
   const { token } = useAuth();
 
-  // Reusable request helper
-  const request = async (path, options = {}) => {
-    const headers = {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    };
+  // Centralized request function
+  async function request(endpoint, options = {}) {
+    const url = `http://localhost:3000${endpoint}`;
 
-    // ✅ Attach token if logged in
+    // Ensure headers exist
+    const headers = options.headers ? { ...options.headers } : {};
+
+    // If token exists, attach Authorization header
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
 
-    console.log("🔎 Sending request:", API + path, { ...options, headers }); // debug
+    // Always expect JSON in/out
+    headers["Content-Type"] = "application/json";
 
-    const response = await fetch(API + path, { ...options, headers });
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("❌ API Error:", response.status, errorText);
-      throw new Error(errorText || `Request failed with ${response.status}`);
+    console.log("🔎 Sending request:", url, { headers });
+
+    const res = await fetch(url, { ...options, headers });
+
+    if (!res.ok) {
+      console.error("❌ API Error:", res.status, res.statusText);
+      throw new Error(`${res.status} ${res.statusText}`);
     }
 
-    return response.json();
-  };
+    return res.json();
+  }
 
   return (
-    <ApiContext.Provider value={{ request }}>
-      {children}
-    </ApiContext.Provider>
+    <ApiContext.Provider value={{ request }}>{children}</ApiContext.Provider>
   );
 }
 
+/**
+ * Hook to use API functions
+ */
 export function useApi() {
-  const context = useContext(ApiContext);
-  if (!context) {
-    throw new Error("useApi must be used within an ApiProvider");
-  }
-  return context;
+  return useContext(ApiContext);
 }
