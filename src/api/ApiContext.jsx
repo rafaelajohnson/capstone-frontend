@@ -5,18 +5,19 @@ import { useAuth } from "../auth/AuthContext";
 const ApiContext = createContext();
 
 export function ApiProvider({ children }) {
-  const { token } = useAuth();
+  const { token } = useAuth(); // ✅ get token from AuthContext
 
-  const API = "http://localhost:3000";
+  const API_BASE = "http://localhost:3000"; // backend base URL
 
+  // Unified request helper
   async function request(endpoint, options = {}) {
     const headers = {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}), // attach token if logged in
       ...options.headers,
     };
 
-    const res = await fetch(API + endpoint, { ...options, headers });
+    const res = await fetch(API_BASE + endpoint, { ...options, headers });
 
     if (!res.ok) {
       const text = await res.text();

@@ -1,13 +1,14 @@
 // src/auth/AuthContext.jsx
 import { createContext, useContext, useEffect, useState } from "react";
-import { API } from "../api/ApiContext";
+import { useApi } from "../api/ApiContext"; // FIXED import
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  // Store token in state + sessionStorage so it survives refresh
+  const { request } = useApi(); // ✅ useApi hook gives us request()
   const [token, setToken] = useState(() => sessionStorage.getItem("token"));
 
+  // Keep token in sessionStorage so it survives refresh
   useEffect(() => {
     if (token) {
       sessionStorage.setItem("token", token);
@@ -18,29 +19,21 @@ export function AuthProvider({ children }) {
 
   // --- Signup ---
   const register = async (credentials) => {
-    const response = await fetch(API + "/auth/signup", {
+    const result = await request("/auth/signup", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(credentials),
     });
-    const result = await response.json();
-    if (!response.ok) throw Error(result.error || "Signup failed");
-
     setToken(result.token); // backend sends { user, token }
     return result;
   };
 
   // --- Login ---
   const login = async (credentials) => {
-    const response = await fetch(API + "/auth/login", {
+    const result = await request("/auth/login", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(credentials),
     });
-    const result = await response.json();
-    if (!response.ok) throw Error(result.error || "Login failed");
-
-    setToken(result.token); // same: { user, token }
+    setToken(result.token); // backend sends { user, token }
     return result;
   };
 
