@@ -1,24 +1,27 @@
-// Home.jsx
-// This is the landing page of the app.
-// Right now it's simple, but it welcomes the user
-// and gives them a quick way to explore stories.
-
-import { Link } from "react-router";
+// src/Home.jsx
+import { Link } from "react-router-dom";
+import { useAuth } from "./auth/AuthContext";
 
 export default function Home() {
+  const { token } = useAuth();
+
   return (
     <section>
-      <h1>Welcome to Story Builder</h1>
+      <h1>Welcome to Choose Your Own Adventure!</h1>
       <p>
-        Create and explore interactive choose-your-own-adventure stories.  
-        Log in to write your own, or browse the existing ones below.
+        This app lets you read and create interactive branching stories. Each
+        page has multiple options—you decide what happens next.
       </p>
-
-      <nav style={{ marginTop: "1.5rem" }}>
-        <Link to="/stories">📖 View Stories</Link>
-        <br />
-        <Link to="/stories/new">➕ Create a Story</Link>
-      </nav>
+      {token ? (
+        <p>
+          🎉 You’re logged in! <Link to="/stories">View stories</Link> to begin.
+        </p>
+      ) : (
+        <p>
+          🚪 Please <Link to="/login">log in</Link> or{" "}
+          <Link to="/register">create an account</Link> to start exploring.
+        </p>
+      )}
     </section>
   );
 }
