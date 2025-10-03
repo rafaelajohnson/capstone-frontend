@@ -1,9 +1,11 @@
+// src/stories/NewStoryForm.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useMutation from "../api/useMutation";
 
 /**
- * NewStoryForm allows the user to create a new story with its first page + options.
+ * NewStoryForm
+ * Form for creating a new story (title + topic).
  */
 export default function NewStoryForm() {
   const navigate = useNavigate();
@@ -11,28 +13,16 @@ export default function NewStoryForm() {
 
   const [title, setTitle] = useState("");
   const [topic, setTopic] = useState("");
-  const [pageText, setPageText] = useState("");
-  const [options, setOptions] = useState(["", ""]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const success = await mutate({
-      title,
-      topic,
-      pages: [
-        {
-          page_number: 1,
-          text: pageText,
-          options: options.filter((o) => o.trim() !== ""),
-        },
-      ],
-    });
-    if (success) navigate("/stories");
+    const success = await mutate({ title, topic });
+    if (success) navigate("/stories"); // Go back to list
   };
 
   return (
     <section>
-      <h1>Create a New Story</h1>
+      <h1>Create New Story</h1>
       <form onSubmit={handleSubmit}>
         <label>
           Title
@@ -42,22 +32,7 @@ export default function NewStoryForm() {
           Topic
           <input value={topic} onChange={(e) => setTopic(e.target.value)} required />
         </label>
-        <label>
-          First Page Text
-          <textarea value={pageText} onChange={(e) => setPageText(e.target.value)} required />
-        </label>
-        <h3>Options</h3>
-        {options.map((opt, idx) => (
-          <input
-            key={idx}
-            value={opt}
-            onChange={(e) =>
-              setOptions(options.map((o, i) => (i === idx ? e.target.value : o)))
-            }
-            placeholder={`Option ${idx + 1}`}
-          />
-        ))}
-        <button type="submit" disabled={loading}>Save Story</button>
+        <button type="submit" disabled={loading}>Save</button>
         {error && <p>Error: {error}</p>}
       </form>
     </section>
