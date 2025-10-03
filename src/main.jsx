@@ -11,11 +11,11 @@ import "./index.css";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
-      <AuthProvider>
-        <ApiProvider>
+      <ApiProvider>
+        <AuthProvider>
           <App />
-        </ApiProvider>
-      </AuthProvider>
+        </AuthProvider>
+      </ApiProvider>
     </BrowserRouter>
   </StrictMode>
 );
