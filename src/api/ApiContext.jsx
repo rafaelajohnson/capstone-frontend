@@ -1,46 +1,33 @@
 // src/api/ApiContext.jsx
 import { createContext, useContext } from "react";
-import { useAuth } from "../auth/AuthContext";
 
 const ApiContext = createContext();
 
-export function ApiProvider({ children }) {
-  const { token } = useAuth?.() || {}; // safely check token
+export function ApiProvider({ children, token }) {
+  const API = "http://localhost:3000"; // adjust if needed
 
-  // Base URL for backend
-  const API = import.meta.env.VITE_API_URL || "http://localhost:3000";
-
-  // Central request function
-  const request = async (path, options = {}) => {
+  // Generic request wrapper
+  const request = async (endpoint, options = {}) => {
     const headers = {
       "Content-Type": "application/json",
-      ...(options.headers || {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options.headers,
     };
 
-    // attach token if logged in
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-
-    const res = await fetch(API + path, { ...options, headers });
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok) {
-      console.error("❌ API Error:", res.status, data);
-      throw new Error(data.error || "Failed request");
-    }
-
-    return data;
+    const res = await fetch(API + endpoint, { ...options, headers });
+    if (!res.ok) throw new Error(`Failed request: ${res.statusText}`);
+    return res.json();
   };
 
   return (
-    <ApiContext.Provider value={{ request }}>
+    <ApiContext.Provider value={{ request, API }}>
       {children}
     </ApiContext.Provider>
   );
 }
 
-// Hook
 export function useApi() {
-  return useContext(ApiContext);
+  const context = useContext(ApiContext);
+  if (!context) throw Error("useApi must be used within ApiProvider");
+  return context;
 }
