@@ -2,14 +2,12 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { API } from "../api/ApiContext";
 
-// Context is like a box we pass around to share login state across the app
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  // Store token in state (and reload from sessionStorage on refresh)
-  const [token, setToken] = useState(sessionStorage.getItem("token"));
+  // Store token in state + sessionStorage so it survives refresh
+  const [token, setToken] = useState(() => sessionStorage.getItem("token"));
 
-  // Whenever token changes, also save/remove it in sessionStorage
   useEffect(() => {
     if (token) {
       sessionStorage.setItem("token", token);
@@ -18,59 +16,44 @@ export function AuthProvider({ children }) {
     }
   }, [token]);
 
-  // --- Register a new user ---
+  // --- Signup ---
   const register = async (credentials) => {
     const response = await fetch(API + "/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(credentials),
     });
-
-    // backend sends back { user, token }
     const result = await response.json();
+    if (!response.ok) throw Error(result.error || "Signup failed");
 
-    if (!response.ok) {
-      // if backend sends { error: "..."} we show it
-      throw Error(result.error || "Failed to register");
-    }
-
-    // save the token so ApiContext can attach it to future requests
-    setToken(result.token);
+    setToken(result.token); // backend sends { user, token }
+    return result;
   };
 
-  // --- Log in existing user ---
+  // --- Login ---
   const login = async (credentials) => {
     const response = await fetch(API + "/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(credentials),
     });
-
-    // backend sends back { user, token }
     const result = await response.json();
+    if (!response.ok) throw Error(result.error || "Login failed");
 
-    if (!response.ok) {
-      throw Error(result.error || "Failed to login");
-    }
-
-    setToken(result.token);
+    setToken(result.token); // same: { user, token }
+    return result;
   };
 
-  // --- Log out user ---
+  // --- Logout ---
   const logout = () => {
-    setToken(null); // clear from memory
-    sessionStorage.removeItem("token"); // clear from browser storage
+    setToken(null);
+    sessionStorage.removeItem("token");
   };
 
-  // everything the app needs about auth
   const value = { token, register, login, logout };
-
-  return (
-    <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-// custom hook so components can use auth easily
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) throw Error("useAuth must be used within an AuthProvider");
