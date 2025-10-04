@@ -1,47 +1,67 @@
 // src/stories/StoriesList.jsx
-// Shows all stories for the logged-in user — kind of like their "story dashboard".
+// This shows all stories for whoever’s logged in.
+// Basically the main "dashboard" for stories.
 
 import { useEffect } from "react";
-import { useQuery } from "../api/useQuery"; // tiny wrapper around fetch()
+import { useQuery } from "../api/useQuery"; // our custom fetch hook
 import { Link } from "react-router-dom";
 
 export default function StoriesList() {
-  // grabbing the stories from our backend (it auto-handles token + JSON)
+  // useQuery does the GET request and gives me loading + error states too
   const { data: stories, loading, error, refetch } = useQuery("/stories");
 
-  // refetch right after mount — just to make sure we’re not seeing cached data
+  // when the page loads, I refetch just to make sure it’s fresh data
   useEffect(() => {
     refetch();
   }, []);
 
-  // basic loading + error states, nothing fancy
+  // quick checks for loading and errors before showing stuff
   if (loading) return <p>Loading stories...</p>;
   if (error) return <p>Error loading stories: {error.message}</p>;
+
+  // just a quick helper for placeholder preview images
+  const getPreview = (topic) => {
+    if (!topic) return "/images/story-default.jpg";
+    const map = {
+      Animals: "/images/dog-story.jpg",
+      Space: "/images/space-story.jpg",
+      Adventure: "/images/castle-story.jpg",
+    };
+    return map[topic] || "/images/story-default.jpg";
+  };
 
   return (
     <div className="stories-list">
       <h1>Your Stories</h1>
 
-      {/* when the user hasn’t made any stories yet */}
+      {/* if the user has no stories yet, just say so nicely */}
       {(!stories || stories.length === 0) && <p>No stories yet!</p>}
 
-      {/* loop through and show each story in a little card-style block */}
+      {/* loop through and show each story as a small card */}
       {stories?.map((story) => (
         <div key={story.id} className="story-card">
+          <img
+            src={getPreview(story.topic)}
+            alt={story.topic}
+            style={{
+              width: "100%",
+              maxWidth: "300px",
+              borderRadius: "8px",
+              marginBottom: "0.5rem",
+            }}
+          />
           <h2>{story.title}</h2>
-          <p>
-            <strong>Topic:</strong> {story.topic}
-          </p>
+          <p><strong>Topic:</strong> {story.topic}</p>
 
-          {/* router link instead of <a> so we don’t reload the whole app */}
-          <Link to={`/stories/${story.id}`}>View</Link>
+          {/* using Link instead of <a> so React Router doesn’t reload the page */}
+          <Link to={`/stories/${story.id}`} className="view-link">View</Link>
         </div>
       ))}
 
-      {/* add new story button at the bottom */}
+      {/* button at the bottom to make a new story */}
       <div style={{ marginTop: "1rem" }}>
         <Link to="/stories/new" className="new-btn">
-          + Create New Story
+          Create New Story
         </Link>
       </div>
     </div>
