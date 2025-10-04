@@ -8,15 +8,15 @@ import Login from "./auth/Login";
 import Register from "./auth/Register";
 import Home from "./Home";
 
-// stories
+// stories (main CRUD)
 import StoriesList from "./stories/StoriesList";
 import StoryDetail from "./stories/StoryDetail";
 import NewStoryForm from "./stories/NewStoryForm";
 import PageDetail from "./stories/PageDetail";
 
-// demo stories
-import StoryDemo from "./stories/demo/StoryDemo";
-import StoryViewer from "./stories/demo/StoryViewer";
+// moved demo stories (used to live in /stories/demo, now right under /stories)
+import StoryDemo from "./stories/StoryDemo";
+import StoryViewer from "./stories/StoryViewer";
 
 export default function App() {
   return (
@@ -29,13 +29,14 @@ export default function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
 
-        {/* Story routes */}
+        {/* Story routes (main CRUD flow) */}
         <Route path="/stories" element={<StoriesList />} />
         <Route path="/stories/new" element={<NewStoryForm />} />
         <Route path="/stories/:id" element={<StoryDetail />} />
         <Route path="/pages/:id" element={<PageDetail />} />
 
-        {/* Demo story routes (new, does not affect others) */}
+        {/* Demo stories for mock-AI story experience */}
+        {/* Clicking on a demo card loads StoryViewer with fake text + image */}
         <Route path="/demo" element={<StoryDemo />} />
         <Route path="/demo/:id" element={<StoryViewer />} />
       </Route>

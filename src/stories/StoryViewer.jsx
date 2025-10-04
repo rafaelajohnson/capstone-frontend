@@ -1,60 +1,70 @@
-// This page shows whichever mock story the user clicks in StoryDemo.
-// Each story has some sample text + an optional image to make it feel "AI-generated".
+// StoryViewer.jsx
+// When a user clicks one of the demo stories, this page shows that story’s content.
+// For now, it’s mock data (pretending to be AI-generated), just to make the app feel real.
 
 import { useParams, Link } from "react-router-dom";
 
-// Simple hardcoded demo stories for now
-// Later, these could come from the database or an AI prompt result.
+// just a few prebuilt stories so the app has something to display
 const storyContent = {
   dog: {
     title: "The Brave Dog",
-    text: "Once upon a time, a brave dog met his best friend for the first time...",
-    image: "/images/dog-story.jpg", // placeholder for demo
+    text: "Once upon a time, a curious dog wandered off and found a friend who needed help.",
+    image: "/images/dog-story.jpg", // optional image placeholder
   },
   space: {
     title: "Journey to Space",
-    text: "You board a spaceship and head off to the stars. Where will you go?",
+    text: "You strap into a ship and launch into orbit. The Earth fades below as stars fill the window.",
     image: "/images/space-story.jpg",
   },
   castle: {
     title: "Mystery of the Castle",
-    text: "A castle stands tall in the mist. Inside, three doors await you...",
+    text: "A tall, misty castle looms before you. Inside, three doors glow with strange colors...",
     image: "/images/castle-story.jpg",
   },
 };
 
 export default function StoryViewer() {
-  const { id } = useParams(); // pulls the story id from the URL
-  const story = storyContent[id]; // looks up the story by id
+  const { id } = useParams(); // grab the story id from the URL
+  const story = storyContent[id]; // get the right story object
 
-  // If someone types an invalid id in the URL, this shows a friendly fallback
+  // if the id doesn’t match any of the demo ones, we just show a “not found” message
   if (!story) {
     return (
-      <div style={{ padding: "1rem" }}>
+      <div style={{ padding: "1.5rem" }}>
         <h2>Story not found</h2>
-        <Link to="/demo">← Back to demo stories</Link>
+        <p>Looks like that one doesn’t exist yet!</p>
+        <Link to="/demo" style={{ color: "teal" }}>
+          ← Back to demo stories
+        </Link>
       </div>
     );
   }
 
-  // Otherwise, show the story details
   return (
-    <div style={{ padding: "1rem" }}>
+    <div style={{ padding: "1.5rem" }}>
+      {/* Title + optional image */}
       <h2>{story.title}</h2>
 
-      {/* Only show an image if one exists for the mock */}
       {story.image && (
         <img
           src={story.image}
           alt={story.title}
-          style={{ maxWidth: "400px", display: "block", marginBottom: "1rem" }}
+          style={{
+            maxWidth: "400px",
+            display: "block",
+            borderRadius: "10px",
+            marginBottom: "1rem",
+          }}
         />
       )}
 
-      <p>{story.text}</p>
+      {/* Main story text */}
+      <p style={{ fontSize: "1.1rem", lineHeight: "1.6" }}>{story.text}</p>
 
-      {/* simple link to go back to demo screen */}
-      <Link to="/demo">← Back to demo stories</Link>
+      {/* Small link back to the demo list */}
+      <Link to="/demo" style={{ color: "teal" }}>
+        ← Back to demo stories
+      </Link>
     </div>
   );
 }
