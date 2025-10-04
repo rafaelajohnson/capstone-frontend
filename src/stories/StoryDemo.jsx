@@ -1,45 +1,79 @@
-// StoryDemo.jsx
-// This page just shows 3 "mock AI" stories so users can pick one to explore.
-// Once clicked, it sends to StoryViewer with the matching story id.
+// src/stories/StoryDemo.jsx
+// This page is basically a “demo hub.”
+// Lets the user preview a few fake AI-generated stories or launch the mock interactive one.
 
 import { Link } from "react-router-dom";
 
 export default function StoryDemo() {
-  // quick list of fake stories (we're keeping it simple for demo mode)
-  const demoStories = [
-    { id: "dog", title: "The Brave Dog", summary: "A loyal dog sets out on a new adventure." },
-    { id: "space", title: "Journey to Space", summary: "Blast off into the stars and discover new worlds." },
-    { id: "castle", title: "Mystery of the Castle", summary: "Explore a foggy castle full of secrets." },
-  ];
-
   return (
-    <div style={{ padding: "1.5rem" }}>
-      <h2>Choose a Story to Begin</h2>
-      <p style={{ marginBottom: "1rem" }}>
-        These are prebuilt “mock AI” stories just to show how the real thing would work later.
+    <div style={{ padding: "1rem" }}>
+      <h1>Try a Demo Story</h1>
+      <p>
+        Pick one of these sample story ideas — or go wild with the interactive
+        demo version.
       </p>
 
-      {/* a simple flex layout for the cards */}
-      <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap" }}>
-        {demoStories.map((story) => (
-          <div
-            key={story.id}
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: "10px",
-              padding: "1rem",
-              width: "250px",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-            }}
-          >
-            {/* Each story is a Link that takes you to StoryViewer */}
-            <h3>{story.title}</h3>
-            <p>{story.summary}</p>
-            <Link to={`/demo/${story.id}`} style={{ color: "teal", fontWeight: "bold" }}>
-              Start →
-            </Link>
-          </div>
-        ))}
+      {/* the 3 small prebuilt story previews (Dog, Space, Castle) */}
+      <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+        {/* Dog story */}
+        <div
+          style={{
+            border: "1px solid #ccc",
+            borderRadius: "8px",
+            padding: "1rem",
+            flex: "1 1 200px",
+          }}
+        >
+          <h3>The Brave Dog</h3>
+          <p>Follow a curious pup on his first big adventure.</p>
+          <Link to="/demo/dog">Read this</Link>
+        </div>
+
+        {/* Space story */}
+        <div
+          style={{
+            border: "1px solid #ccc",
+            borderRadius: "8px",
+            padding: "1rem",
+            flex: "1 1 200px",
+          }}
+        >
+          <h3>Journey to Space</h3>
+          <p>Blast off on an interstellar trip full of surprises.</p>
+          <Link to="/demo/space">Read this</Link>
+        </div>
+
+        {/* Castle story */}
+        <div
+          style={{
+            border: "1px solid #ccc",
+            borderRadius: "8px",
+            padding: "1rem",
+            flex: "1 1 200px",
+          }}
+        >
+          <h3>Mystery of the Castle</h3>
+          <p>Explore the hidden chambers of an old, spooky castle.</p>
+          <Link to="/demo/castle">Read this</Link>
+        </div>
+      </div>
+
+      {/* bonus “interactive” mock demo — just for fun */}
+      <div style={{ marginTop: "2rem", textAlign: "center" }}>
+        <p>Want to try something interactive?</p>
+        <Link
+          to="/demo/player"
+          style={{
+            display: "inline-block",
+            background: "#0077cc",
+            color: "#fff",
+            padding: "0.6rem 1.2rem",
+            borderRadius: "6px",
+            textDecoration: "none",
+          }}
+        >
+          🎮 Play Interactive Demo
+        </Link>
       </div>
     </div>
   );

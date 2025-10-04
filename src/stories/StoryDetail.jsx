@@ -1,64 +1,50 @@
 // src/stories/StoryDetail.jsx
-// This is where a single story gets displayed.
-// Basically the "Read" part of CRUD.
+// shows one specific story and its pages.
+// basically where you “read” or manage your story.
 
 import { useParams, Link } from "react-router-dom";
-import { useQuery } from "../api/useQuery"; // for GET requests
-import { useAuth } from "../auth/AuthContext";
+import { useQuery } from "../api/useQuery"; // our GET helper
 
 export default function StoryDetail() {
-  const { id } = useParams(); // story id from the URL
-  const { token } = useAuth();
+  const { id } = useParams();
 
-  // fetch story details from backend
-  // I like using useQuery since it handles loading + error automatically
-  const { data: story, loading, error } = useQuery(`/stories/${id}`, [id]);
+  // grab the story info from the backend
+  const { data: story, loading, error } = useQuery(`/stories/${id}`);
 
-  // show loading state while waiting for the fetch
   if (loading) return <p>Loading story...</p>;
-
-  // if there’s an error or no story, handle it nicely
-  if (error) return <p style={{ color: "red" }}>Error: {error.message}</p>;
+  if (error) return <p>Error loading story: {error.message}</p>;
   if (!story) return <p>Story not found.</p>;
 
   return (
-    <div className="story-detail">
+    <div className="story-detail" style={{ padding: "1rem" }}>
       <h1>{story.title}</h1>
-      <p className="topic">Topic: {story.topic}</p>
+      <p><strong>Topic:</strong> {story.topic}</p>
 
-      {/* A quick note about who’s logged in — not critical but nice to show */}
-      {token && <p style={{ fontSize: "0.9em" }}>You’re logged in ✔️</p>}
+      <hr />
 
-      {/* For now, I’m keeping this simple: just list all pages */}
+      {/* show any pages if they exist */}
       {story.pages && story.pages.length > 0 ? (
-        <div className="story-pages">
+        <ul>
           {story.pages.map((page) => (
-            <div key={page.id} className="page-card">
-              <h3>Page {page.page_number}</h3>
-              <p>{page.text}</p>
-
-              {/* if page has options, show them as links */}
-              {page.options && page.options.length > 0 && (
-                <ul>
-                  {page.options.map((opt) => (
-                    <li key={opt.id}>
-                      <Link to={`/pages/${opt.next_page_id || page.id}`}>
-                        {opt.option_text}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+            <li key={page.id}>
+              <Link to={`/pages/${page.id}`}>
+                Page {page.page_number}: {page.text.slice(0, 40)}...
+              </Link>
+            </li>
           ))}
-        </div>
+        </ul>
       ) : (
-        <p>No pages yet — maybe add one?</p>
+        <p>No pages yet.</p>
       )}
 
-      {/* Small navigation area */}
-      <div style={{ marginTop: "20px" }}>
-        <Link to="/stories">← Back to all stories</Link>
+      {/* link to add a page (next feature, handled by PageDetail) */}
+      <div style={{ marginTop: "1rem" }}>
+        <Link to={`/pages/new?storyId=${story.id}`}>Add New Page</Link>
+      </div>
+
+      {/* little nav helper back to story list */}
+      <div style={{ marginTop: "1rem" }}>
+        <Link to="/stories">← Back to stories</Link>
       </div>
     </div>
   );

@@ -1,55 +1,56 @@
 // src/stories/PageDetail.jsx
-// This one shows a single page inside a story.
-// Think of it like: one moment in the adventure.
+// shows a single page of a story (like one scene).
+// each page can have options that lead to other pages later.
 
 import { useParams, Link } from "react-router-dom";
-import { useQuery } from "../api/useQuery";
+import { useQuery } from "../api/useQuery"; // our GET helper
 
 export default function PageDetail() {
-  const { id } = useParams(); // the page ID from URL
+  const { id } = useParams();
 
-  // pulling that page data from backend
-  // it fetches /pages/:id
-  const { data: pages, loading, error } = useQuery(`/pages/${id}`, [id]);
+  // grab this specific page
+  const { data: page, loading, error } = useQuery(`/pages/${id}`);
+  // also grab this page’s options (choices)
+  const { data: options } = useQuery(`/options/page/${id}`);
 
-  // still loading? let’s not leave the user hanging
-  if (loading) return <p>Loading this page...</p>;
-
-  // if something blows up (bad fetch or missing id)
-  if (error) return <p style={{ color: "red" }}>Error: {error.message}</p>;
-
-  // sometimes API returns an empty array, so just handle that too
-  if (!pages || pages.length === 0) return <p>Page not found.</p>;
-
-  // right now, /pages/:id gives us an array of pages (by story id),
-  // so let's just grab the first page for now (since it's the one we want)
-  const page = pages[0];
+  if (loading) return <p>Loading page...</p>;
+  if (error) return <p>Error loading page: {error.message}</p>;
+  if (!page) return <p>Page not found.</p>;
 
   return (
-    <div className="page-detail">
+    <div className="page-detail" style={{ padding: "1rem" }}>
       <h2>Page {page.page_number}</h2>
       <p>{page.text}</p>
 
-      {/* if this page has options, show them */}
-      {page.options && page.options.length > 0 ? (
+      <hr />
+
+      {/* if this page has choices, show them */}
+      <h3>Options</h3>
+      {options && options.length > 0 ? (
         <ul>
-          {page.options.map((opt) => (
+          {options.map((opt) => (
             <li key={opt.id}>
-              {/* each option could point to another page */}
-              <Link to={`/pages/${opt.next_page_id || page.id}`}>
+              <button
+                style={{
+                  background: "#eee",
+                  border: "1px solid #ccc",
+                  padding: "6px 10px",
+                  cursor: "pointer",
+                }}
+                onClick={() => alert(`Pretend this goes to the next page 😄`)}
+              >
                 {opt.option_text}
-              </Link>
+              </button>
             </li>
           ))}
         </ul>
       ) : (
-        // simple fallback: no options yet
-        <p>Nothing to choose here — the story might end here or need more options.</p>
+        <p>No options yet for this page.</p>
       )}
 
-      {/* simple nav link back to story list */}
-      <div style={{ marginTop: "20px" }}>
-        <Link to="/stories">← Back to all stories</Link>
+      {/* link back just for quick nav */}
+      <div style={{ marginTop: "1rem" }}>
+        <Link to={`/stories/${page.story_id}`}>← Back to story</Link>
       </div>
     </div>
   );

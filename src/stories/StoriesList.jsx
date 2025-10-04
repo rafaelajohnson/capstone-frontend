@@ -1,21 +1,20 @@
 // src/stories/StoriesList.jsx
-// This shows all stories for whoever’s logged in.
-// Basically the main "dashboard" for stories.
+// Shows all stories for the logged-in user — kind of like their "story dashboard".
 
 import { useEffect } from "react";
-import { useQuery } from "../api/useQuery"; // our custom fetch hook
+import { useQuery } from "../api/useQuery"; // tiny wrapper around fetch()
 import { Link } from "react-router-dom";
 
 export default function StoriesList() {
-  // useQuery does the GET request and gives me loading + error states too
+  // grabbing the stories from our backend (it auto-handles token + JSON)
   const { data: stories, loading, error, refetch } = useQuery("/stories");
 
-  // when the page loads, I refetch just to make sure it’s fresh data
+  // refetch right after mount — just to make sure we’re not seeing cached data
   useEffect(() => {
     refetch();
   }, []);
 
-  // quick checks for loading and errors before showing stuff
+  // basic loading + error states, nothing fancy
   if (loading) return <p>Loading stories...</p>;
   if (error) return <p>Error loading stories: {error.message}</p>;
 
@@ -23,24 +22,26 @@ export default function StoriesList() {
     <div className="stories-list">
       <h1>Your Stories</h1>
 
-      {/* if the user has no stories yet, just say so nicely */}
+      {/* when the user hasn’t made any stories yet */}
       {(!stories || stories.length === 0) && <p>No stories yet!</p>}
 
-      {/* loop through and show each story as a small card */}
+      {/* loop through and show each story in a little card-style block */}
       {stories?.map((story) => (
         <div key={story.id} className="story-card">
           <h2>{story.title}</h2>
-          <p><strong>Topic:</strong> {story.topic}</p>
+          <p>
+            <strong>Topic:</strong> {story.topic}
+          </p>
 
-          {/* using Link instead of <a> so React Router doesn’t reload the page */}
+          {/* router link instead of <a> so we don’t reload the whole app */}
           <Link to={`/stories/${story.id}`}>View</Link>
         </div>
       ))}
 
-      {/* button at the bottom to make a new story */}
+      {/* add new story button at the bottom */}
       <div style={{ marginTop: "1rem" }}>
         <Link to="/stories/new" className="new-btn">
-          Create New Story
+          + Create New Story
         </Link>
       </div>
     </div>

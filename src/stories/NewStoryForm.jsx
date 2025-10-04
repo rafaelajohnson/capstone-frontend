@@ -1,41 +1,51 @@
 // src/stories/NewStoryForm.jsx
-// This is the form for making a brand new story.
-// Basically the “Create” part of CRUD.
+// lets the user create a brand new story and send it to the backend.
 
 import { useState } from "react";
-import { useMutation } from "../api/useMutation"; // handles POST/PUT/DELETE
+import { useMutation } from "../api/useMutation"; // our POST helper
 import { useNavigate } from "react-router-dom";
 
 export default function NewStoryForm() {
-  const navigate = useNavigate();
-
-  // simple local state for title and topic inputs
+  // local form state — pretty basic stuff
   const [title, setTitle] = useState("");
   const [topic, setTopic] = useState("");
 
-  // useMutation lets me do a POST request and track loading/error
-  const { mutate, loading, error } = useMutation("POST", "/stories");
+  // navigate helps us send user back to story list after creating one
+  const navigate = useNavigate();
 
-  // when user submits the form
+  // useMutation handles the POST call for creating stories
+  const { mutate, loading, error } = useMutation("/stories");
+
   async function handleSubmit(e) {
-    e.preventDefault(); // stop page reload
+    e.preventDefault();
+
+    // quick sanity check before calling backend
+    if (!title.trim() || !topic.trim()) {
+      alert("Both title and topic are required!");
+      return;
+    }
 
     try {
-      // send title + topic to backend
-      const result = await mutate({ title, topic, pages: [] });
+      // send the new story to backend
+      await mutate({
+        method: "POST",
+        body: JSON.stringify({ title, topic, pages: [] }),
+      });
 
-      // once story is created, go straight to that story’s detail page
-      navigate(`/stories/${result.storyId}`);
+      // once it's saved, take user back to story list
+      navigate("/stories");
     } catch (err) {
-      console.error("Error creating story:", err);
+      console.error("❌ Error creating story:", err);
     }
   }
 
   return (
-    <div className="new-story">
-      <h1>Start a New Story</h1>
+    <div className="new-story-form">
+      <h1>Create a New Story</h1>
 
-      {/* I kept it simple — just a small form with 2 fields */}
+      {/* if backend complains, show it in plain English */}
+      {error && <p style={{ color: "red" }}>{error.message}</p>}
+
       <form onSubmit={handleSubmit}>
         <label>
           Title:
@@ -43,8 +53,7 @@ export default function NewStoryForm() {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Enter story title..."
-            required
+            placeholder="Something catchy..."
           />
         </label>
 
@@ -54,19 +63,14 @@ export default function NewStoryForm() {
             type="text"
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
-            placeholder="Like ‘Adventure’, ‘Fantasy’, etc."
-            required
+            placeholder="Adventure, Mystery, Space..."
           />
         </label>
 
-        {/* Button says “Creating...” when it’s loading */}
         <button type="submit" disabled={loading}>
-          {loading ? "Creating..." : "Create Story"}
+          {loading ? "Saving..." : "Save Story"}
         </button>
       </form>
-
-      {/* If backend errors out, I just show it here */}
-      {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
     </div>
   );
 }
