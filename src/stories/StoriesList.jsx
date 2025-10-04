@@ -1,42 +1,48 @@
 // src/stories/StoriesList.jsx
+// This shows all stories for whoever’s logged in.
+// Basically the main "dashboard" for stories.
+
+import { useEffect } from "react";
+import { useQuery } from "../api/useQuery"; // our custom fetch hook
 import { Link } from "react-router-dom";
-import useQuery from "../api/useQuery";
 
-/**
- * StoriesList
- * Shows all stories for the logged-in user.
- * Uses useQuery to hit GET /stories (backend requires token).
- * Provides links to view a story or create a new one.
- */
 export default function StoriesList() {
-  // Call API to fetch stories, tag = "stories" so it refreshes if invalidated
-  const { data: stories, loading, error } = useQuery("/stories", "stories");
+  // useQuery does the GET request and gives me loading + error states too
+  const { data: stories, loading, error, refetch } = useQuery("/stories");
 
+  // when the page loads, I refetch just to make sure it’s fresh data
+  useEffect(() => {
+    refetch();
+  }, []);
+
+  // quick checks for loading and errors before showing stuff
   if (loading) return <p>Loading stories...</p>;
-  if (error) return <p>Error: {error}</p>;
+  if (error) return <p>Error loading stories: {error.message}</p>;
 
   return (
-    <section>
+    <div className="stories-list">
       <h1>Your Stories</h1>
 
-      {/* Link to create a brand new story */}
-      <Link to="/stories/new">
-        <button>Create New Story</button>
-      </Link>
+      {/* if the user has no stories yet, just say so nicely */}
+      {(!stories || stories.length === 0) && <p>No stories yet!</p>}
 
-      {/* If no stories yet, tell the user */}
-      {(!stories || stories.length === 0) && <p>No stories yet.</p>}
+      {/* loop through and show each story as a small card */}
+      {stories?.map((story) => (
+        <div key={story.id} className="story-card">
+          <h2>{story.title}</h2>
+          <p><strong>Topic:</strong> {story.topic}</p>
 
-      <ul>
-        {stories?.map((story) => (
-          <li key={story.id}>
-            {/* Each story links to its detail page */}
-            <Link to={`/stories/${story.id}`}>
-              {story.title} ({story.topic})
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </section>
+          {/* using Link instead of <a> so React Router doesn’t reload the page */}
+          <Link to={`/stories/${story.id}`}>View</Link>
+        </div>
+      ))}
+
+      {/* button at the bottom to make a new story */}
+      <div style={{ marginTop: "1rem" }}>
+        <Link to="/stories/new" className="new-btn">
+          Create New Story
+        </Link>
+      </div>
+    </div>
   );
 }
