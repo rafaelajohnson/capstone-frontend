@@ -13,6 +13,7 @@ import StoriesList from "./stories/StoriesList";
 import StoryDetail from "./stories/StoryDetail";
 import NewStoryForm from "./stories/NewStoryForm";
 import PageDetail from "./stories/PageDetail";
+import StoryDemo from "./stories/StoryDemo"; // ✅ NEW demo import
 
 export default function App() {
   return (
@@ -30,6 +31,9 @@ export default function App() {
         <Route path="/stories/new" element={<NewStoryForm />} />
         <Route path="/stories/:id" element={<StoryDetail />} />
         <Route path="/pages/:id" element={<PageDetail />} />
+
+        {/* Demo mock AI story */}
+        <Route path="/stories/demo" element={<StoryDemo />} /> 
       </Route>
     </Routes>
   );
