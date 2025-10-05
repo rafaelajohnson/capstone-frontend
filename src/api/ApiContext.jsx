@@ -1,31 +1,40 @@
+// src/api/ApiContext.jsx
+// Centralized place for API requests — avoids repeating fetch setup everywhere.
+
 import { createContext, useContext } from "react";
-import { useAuth } from "../auth/AuthContext";
 
 const ApiContext = createContext();
 
 export function ApiProvider({ children }) {
-  const { token } = useAuth();
-  const API = "http://localhost:3000";
+  // Base request helper — automatically includes auth token if available
+  const request = async (url, options = {}) => {
+    const token = sessionStorage.getItem("token");
 
-  async function request(endpoint, options = {}) {
-    const headers = {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
-    };
+    const res = await fetch(`${import.meta.env.VITE_API_URL}${url}`, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...options.headers,
+      },
+    });
 
-    const res = await fetch(API + endpoint, { ...options, headers });
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text || `Failed request: ${res.status}`);
-    }
+    if (!res.ok) throw new Error(`Request failed: ${res.status}`);
     return res.json();
-  }
+  };
 
-  const value = { request };
-  return <ApiContext.Provider value={value}>{children}</ApiContext.Provider>;
+  return (
+    <ApiContext.Provider value={{ request }}>
+      {children}
+    </ApiContext.Provider>
+  );
 }
 
+// 👇 Custom hook to access the API context anywhere in the app
 export function useApi() {
-  return useContext(ApiContext);
+  const context = useContext(ApiContext);
+  if (!context) {
+    throw new Error("useApi must be used inside an ApiProvider");
+  }
+  return context; // returns { request }
 }
