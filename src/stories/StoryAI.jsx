@@ -1,6 +1,6 @@
 // src/stories/StoryAI.jsx
 import { useState, useEffect } from "react";
-import { mockStory } from "../data/mockStories";
+import { mockStories } from "../data/mockStories";
 import { useMutation } from "../api/useMutation";
 import { Link } from "react-router-dom";
 

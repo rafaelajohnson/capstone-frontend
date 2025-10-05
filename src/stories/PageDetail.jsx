@@ -4,7 +4,7 @@
 
 // src/stories/PageDetail.jsx
 import { useParams } from "react-router-dom";
-import { mockStory } from "../data/mockStories";
+import { mockStories } from "../data/mockStories";
 
 export default function PageDetail() {
   const { id } = useParams();

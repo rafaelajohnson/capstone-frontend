@@ -4,7 +4,7 @@
 
 import { useState } from "react";
 import { useMutation } from "../api/useMutation";
-import { mockStory } from "../data/mockStories";
+import { mockStories } from "../data/mockStories";
 
 export default function NewStoryForm() {
   const [title, setTitle] = useState("");

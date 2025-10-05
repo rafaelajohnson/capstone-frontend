@@ -4,7 +4,7 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { mockStory } from "../data/mockStories";
+import { mockStories } from "../data/mockStories";
 
 export default function StoryDemoPlayer() {
   // we start from the "start" page of our mock story
