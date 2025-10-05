@@ -21,10 +21,14 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  position: relative;
+  overflow: hidden;
 }
 
 main {
   flex: 1;
+  position: relative;
+  z-index: 1;
 }
 
 /* === TWINKLING BACKGROUND EFFECT === */
@@ -34,8 +38,8 @@ body::after {
   position: fixed;
   top: 0;
   left: 0;
-  width: 200%;
-  height: 200%;
+  width: 100vw;   /* prevent extending beyond screen */
+  height: 100vh;  /* stops repeating after footer */
   background: radial-gradient(white 1px, transparent 1px);
   background-size: 3px 3px;
   opacity: 0.1;
