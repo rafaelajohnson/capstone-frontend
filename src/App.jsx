@@ -15,6 +15,7 @@ import StoriesList from "./stories/StoriesList";
 import StoryDetail from "./stories/StoryDetail";
 import NewStoryForm from "./stories/NewStoryForm";
 import PageDetail from "./stories/PageDetail";
+import StoryAI from "./stories/StoryAI";
 
 // demo story files (moved directly under /stories)
 import StoryDemo from "./stories/StoryDemo";
@@ -40,6 +41,7 @@ export default function App() {
         <Route path="/stories/new" element={<NewStoryForm />} />
         <Route path="/stories/:id" element={<StoryDetail />} />
         <Route path="/pages/:id" element={<PageDetail />} />
+        <Route path="/ai-story" element={<StoryAI />} />
 
         {/* demo stuff — not connected to the backend */}
         <Route path="/demo" element={<StoryDemo />} />

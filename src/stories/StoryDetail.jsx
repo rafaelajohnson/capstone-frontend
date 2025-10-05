@@ -1,46 +1,72 @@
-// lets user view a single story and delete it if they want to
-import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "../api/useQuery";
-import { useMutation } from "../api/useMutation";
+import { useParams, Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 export default function StoryDetail() {
   const { id } = useParams();
-  const navigate = useNavigate();
+  const [story, setStory] = useState(null);
+  const [pages, setPages] = useState([]);
+  const [error, setError] = useState(null);
 
-  // get the story details
-  const { data: story, loading, error } = useQuery(`/stories/${id}`);
+  useEffect(() => {
+    async function fetchStory() {
+      try {
+        // Fetch story info
+        const storyRes = await fetch(`${import.meta.env.VITE_API_URL}/stories/${id}`);
+        if (!storyRes.ok) throw new Error(`Story fetch failed: ${storyRes.status}`);
+        const storyData = await storyRes.json();
+        setStory(storyData);
 
-  // delete mutation hook
-  const { mutate: deleteStory, loading: deleting } = useMutation(
-    `/stories/${id}`,
-    "DELETE"
-  );
-
-  async function handleDelete() {
-    if (confirm("Are you sure you want to delete this story?")) {
-      await deleteStory();
-      navigate("/stories");
+        // Fetch pages linked to this story
+        const pagesRes = await fetch(`${import.meta.env.VITE_API_URL}/pages?story_id=${id}`);
+        if (!pagesRes.ok) throw new Error(`Pages fetch failed: ${pagesRes.status}`);
+        const pagesData = await pagesRes.json();
+        setPages(pagesData);
+      } catch (err) {
+        console.error("❌ Error fetching story detail:", err);
+        setError(err.message);
+      }
     }
-  }
 
-  if (loading) return <p>Loading story...</p>;
-  if (error) return <p>Error loading story: {error.message}</p>;
-  if (!story) return <p>Story not found.</p>;
+    fetchStory();
+  }, [id]);
+
+  if (error) return <div className="floating-box">⚠️ {error}</div>;
+  if (!story) return <div className="floating-box">Loading story...</div>;
 
   return (
-    <div style={{ padding: "1rem" }}>
-      <h1>{story.title}</h1>
-      <p>
-        <strong>Topic:</strong> {story.topic}
-      </p>
+    <div className="floating-box">
+      <h2>{story.title}</h2>
+      <p><strong>Topic:</strong> {story.topic}</p>
+      <hr style={{ margin: "1rem 0", opacity: 0.3 }} />
 
-      <button
-        onClick={handleDelete}
-        disabled={deleting}
-        style={{ background: "#f44336", marginTop: "1rem" }}
-      >
-        {deleting ? "Deleting..." : "🗑️ Delete Story"}
-      </button>
+      {pages.length === 0 ? (
+        <p>No pages saved yet for this story.</p>
+      ) : (
+        <div className="story-pages">
+          {pages.map((page, i) => (
+            <div
+              key={page.id || i}
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                borderRadius: "10px",
+                padding: "1rem",
+                marginBottom: "1rem",
+                textAlign: "left",
+              }}
+            >
+              <h4 style={{ color: "#9cd3ff" }}>Scene {i + 1}</h4>
+              <p>{page.text}</p>
+            </div>
+          ))}
+          <p style={{ textAlign: "center", fontWeight: "bold", marginTop: "1rem" }}>
+            🏁 The End
+          </p>
+        </div>
+      )}
+
+      <Link to="/stories" className="button" style={{ marginTop: "1.5rem" }}>
+        ← Back to My Stories
+      </Link>
     </div>
   );
 }

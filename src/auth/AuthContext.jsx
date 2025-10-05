@@ -1,14 +1,15 @@
-// handles login/signup/logout logic and keeps the token in memory + sessionStorage
+// src/auth/AuthContext.jsx
+// Handles login/signup/logout + keeps JWT in memory + sessionStorage
 import { createContext, useContext, useEffect, useState } from "react";
-import { useApi } from "../api/ApiContext"; // gives us request()
+import { useApi } from "../api/ApiContext";
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const { request } = useApi(); // make sure this matches the ApiContext
+  const { request } = useApi(); // custom fetch wrapper from ApiContext
   const [token, setToken] = useState(() => sessionStorage.getItem("token"));
 
-  // keep token synced with sessionStorage
+  // keep token synced to sessionStorage
   useEffect(() => {
     if (token) {
       sessionStorage.setItem("token", token);
@@ -17,39 +18,49 @@ export function AuthProvider({ children }) {
     }
   }, [token]);
 
-  // register a new user
+  //  helper to include Authorization header easily
+  const authHeaders = token
+    ? { Authorization: `Bearer ${token}` }
+    : {};
+
+  // === register ===
   async function register(credentials) {
     const result = await request("/auth/signup", {
       method: "POST",
       body: JSON.stringify(credentials),
+      headers: { "Content-Type": "application/json" },
     });
     setToken(result.token);
     return result;
   }
 
-  // login an existing user
+  // === login ===
   async function login(credentials) {
     const result = await request("/auth/login", {
       method: "POST",
       body: JSON.stringify(credentials),
+      headers: { "Content-Type": "application/json" },
     });
     setToken(result.token);
     return result;
   }
 
-  // logout clears token everywhere
+  // === logout ===
   function logout() {
     setToken(null);
     sessionStorage.removeItem("token");
   }
 
-  const value = { token, register, login, logout };
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{ token, register, login, logout, authHeaders }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
-// hook so other files can use AuthContext
+// simple custom hook
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) throw Error("useAuth must be used inside an AuthProvider");
-  return context;
+  return useContext(AuthContext);
 }
