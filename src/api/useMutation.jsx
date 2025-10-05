@@ -2,54 +2,74 @@
 // This hook is for sending POST/PUT/DELETE requests — basically anything that *changes* data.
 // It’s the action twin of useQuery.jsx (which just *gets* data).
 // Keeping it hand-coded means we can control exactly how loading and errors behave.
-
 import { useState } from "react";
-import { useAuth } from "../auth/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { useMutation } from "../api/useMutation";
+import { mockStories } from "../data/mockStories";
 
-export function useMutation(endpoint, method = "POST") {
-  const { token } = useAuth(); // grab our auth token for protected routes
-  const [loading, setLoading] = useState(false); // track when we're sending data
-  const [error, setError] = useState(null); // catch any network/server issues
-  const [data, setData] = useState(null); // hold the response data (like a created object)
+export default function NewStoryForm() {
+  const { mutate } = useMutation("/stories");
+  const navigate = useNavigate();
+  const [title, setTitle] = useState("");
+  const [topic, setTopic] = useState("");
 
-  // this is the function we actually call to send data
-  async function mutate(bodyData) {
+  async function handleSubmit(e) {
+    e.preventDefault();
+
     try {
-      setLoading(true);
-      setError(null);
+      const key =
+        topic.toLowerCase().includes("dog")
+          ? "dog"
+          : topic.toLowerCase().includes("space")
+          ? "space"
+          : "castle";
 
-      // make sure the API URL exists and build the full request path
-      const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
-      const url = `${baseUrl}${endpoint}`; // example → http://localhost:3000/stories
+      const storyData = mockStories[key];
+      if (!storyData) throw new Error("Invalid topic");
 
-      // send the request
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}), // attach token if we have one
-        },
-        body: JSON.stringify(bodyData),
+      // Send the story to backend
+      const createdStory = await mutate({
+        title: storyData.title || title,
+        topic,
+        pages: storyData.pages,
       });
 
-      // handle non-200s
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || `Request failed with ${res.status}`);
-      }
-
-      // if it worked — parse JSON + store it
-      const json = await res.json();
-      setData(json);
-      return json;
+      alert("🎉 Story created! Check 'My Stories' to view it.");
+      navigate("/stories");
     } catch (err) {
-      console.error("❌ useMutation error:", err);
-      setError(err);
-    } finally {
-      setLoading(false); // stop the spinner
+      console.error("❌ Error creating story:", err);
+      alert("Failed to create story.");
     }
   }
 
-  // return everything so components can use it however they want
-  return { mutate, data, loading, error };
+  return (
+    <div className="floating-box">
+      <h2>✨ Create Your Adventure ✨</h2>
+      <form onSubmit={handleSubmit}>
+        <label>
+          Title:
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Enter a title..."
+            required
+          />
+        </label>
+        <label>
+          Topic:
+          <input
+            type="text"
+            value={topic}
+            onChange={(e) => setTopic(e.target.value)}
+            placeholder="Dog, Space, or Castle..."
+            required
+          />
+        </label>
+        <button type="submit" className="button">
+          🚀 Create Story
+        </button>
+      </form>
+    </div>
+  );
 }
