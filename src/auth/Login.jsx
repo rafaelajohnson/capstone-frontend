@@ -1,32 +1,30 @@
+// src/auth/Login.jsx
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 
 /** A form that lets an existing user log in */
 export default function Login() {
-  const { login } = useAuth(); // hook into auth context to call backend
-  const navigate = useNavigate(); // redirect after successful login
-
+  const { login } = useAuth(); // same context hook
+  const navigate = useNavigate();
   const [error, setError] = useState(null);
 
-  // Handle form submission
   const onLogin = async (formData) => {
     const username = formData.get("username");
     const password = formData.get("password");
 
     try {
-      // Send credentials to backend /auth/login
       await login({ username, password });
-      navigate("/"); // go back to homepage once logged in
+      navigate("/");
     } catch (e) {
-      setError(e.message); // show error if login fails
+      setError(e.message);
     }
   };
 
   return (
-    <>
+    <div className="floating-box">
       <h1>Log in to your account</h1>
-      {/* form uses action instead of onSubmit, which plays nice with React Router */}
+
       <form action={onLogin}>
         <label>
           Username
@@ -39,7 +37,13 @@ export default function Login() {
         <button>Login</button>
         {error && <output>{error}</output>}
       </form>
-      <Link to="/register">Need an account? Register here.</Link>
-    </>
+
+      <p style={{ marginTop: "1rem" }}>
+        Need an account?{" "}
+        <Link to="/register" className="button">
+          Register here
+        </Link>
+      </p>
+    </div>
   );
 }

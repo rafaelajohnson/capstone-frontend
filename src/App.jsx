@@ -7,6 +7,8 @@ import Layout from "./layout/Layout";
 import Login from "./auth/Login";
 import Register from "./auth/Register";
 import Home from "./Home";
+import About from "./pages/About";
+import HowItWorks from "./pages/HowItWorks";
 
 // main story files
 import StoriesList from "./stories/StoriesList";
@@ -30,6 +32,8 @@ export default function App() {
         {/* auth pages */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/how-it-works" element={<HowItWorks />} />
 
         {/* story pages (the real user stories) */}
         <Route path="/stories" element={<StoriesList />} />

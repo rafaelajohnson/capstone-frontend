@@ -1,88 +1,66 @@
 // src/stories/NewStoryForm.jsx
 // This page lets the user make a brand-new story.
-// We’re using useMutation to send the POST request to the backend.
-// Keeping it simple — just a title + topic for now.
-
+// using useMutation to send the POST request to the backend.
+/// user fills in title + topic, clicks submit → we "fake" an AI start
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useMutation } from "../api/useMutation";
+import { useNavigate } from "react-router-dom";
+import { mockStory } from "../data/mockStories";
 
 export default function NewStoryForm() {
-  // local state for form inputs — React keeps them updated as you type
+  const navigate = useNavigate();
+  const { mutate, loading, error } = useMutation("/stories");
+
   const [title, setTitle] = useState("");
   const [topic, setTopic] = useState("");
 
-  // our helper hook for POSTing new data
-  const { mutate, loading, error } = useMutation("/stories");
-
-  // useNavigate lets us send the user back to the list after creation
-  const navigate = useNavigate();
-
-  // this runs when the form is submitted
   async function handleSubmit(e) {
-    e.preventDefault(); // stop the page from refreshing
-    if (!title || !topic) return alert("Please fill out both fields!");
+    e.preventDefault();
 
-    // send the POST request with title + topic + empty pages array (for now)
-    const result = await mutate({ title, topic, pages: [] });
+    // just basic check
+    if (!title || !topic) return alert("Please fill all fields");
 
-    // if the backend returns a storyId, we can redirect right away
-    if (result?.storyId) {
+    // send the story to backend (minimal)
+    const newStory = await mutate({ title, topic, pages: [] });
+
+    // after saving, pretend AI gives the opening text
+    if (newStory?.storyId) {
+      alert(
+        `✨ AI Suggestion:\n"${mockStory.pages.start.text}"\n\nNow add 3 options just like AI would!`
+      );
       navigate("/stories");
     }
   }
 
   return (
-    <div style={{ padding: "1rem" }}>
-      <h1>Create a New Story</h1>
+    <form onSubmit={handleSubmit} style={{ maxWidth: "500px", margin: "2rem auto" }}>
+      <h2>Create a New Story</h2>
 
-      {/* this form is intentionally super minimal */}
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "1rem" }}>
-          <label>
-            <strong>Title:</strong>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="My Awesome Story"
-              style={{ display: "block", width: "100%", marginTop: "0.25rem" }}
-            />
-          </label>
-        </div>
+      <label>
+        Title:
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+          style={{ display: "block", width: "100%", marginBottom: "1rem" }}
+        />
+      </label>
 
-        <div style={{ marginBottom: "1rem" }}>
-          <label>
-            <strong>Topic:</strong>
-            <input
-              type="text"
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              placeholder="Adventure, Space, Magic..."
-              style={{ display: "block", width: "100%", marginTop: "0.25rem" }}
-            />
-          </label>
-        </div>
+      <label>
+        Topic:
+        <input
+          value={topic}
+          onChange={(e) => setTopic(e.target.value)}
+          required
+          style={{ display: "block", width: "100%", marginBottom: "1rem" }}
+        />
+      </label>
 
-        {/* show loading or error feedback in a simple way */}
-        {loading && <p>Saving your story...</p>}
-        {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
+      <button type="submit" disabled={loading}>
+        {loading ? "Saving..." : "Create Story"}
+      </button>
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            padding: "0.5rem 1rem",
-            borderRadius: "5px",
-            border: "none",
-            background: "#0077cc",
-            color: "white",
-            cursor: "pointer",
-          }}
-        >
-          {loading ? "Creating..." : "Create Story"}
-        </button>
-      </form>
-    </div>
+      {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
+    </form>
   );
 }
