@@ -19,9 +19,8 @@ export default function NewStoryForm() {
     e.preventDefault();
     setError(null);
     setLoading(true);
-
+  
     try {
-      // choose mock story content based on topic
       const chosenKey =
         topic.toLowerCase().includes("dog")
           ? "dog"
@@ -29,18 +28,18 @@ export default function NewStoryForm() {
           ? "space"
           : topic.toLowerCase().includes("castle")
           ? "castle"
-          : "dog"; // fallback
-
+          : "dog";
+  
       const mockStory = mockStories[chosenKey];
-
+  
       const payload = {
         title: title || mockStory.title,
         topic: topic || chosenKey,
-        pages: mockStory.pages || [], // backend expects this field
+        pages: mockStory.pages || [],
       };
-
+  
       console.log("📤 Sending story data:", payload);
-
+  
       const storyRes = await fetch(`${import.meta.env.VITE_API_URL}/stories`, {
         method: "POST",
         headers: {
@@ -49,18 +48,32 @@ export default function NewStoryForm() {
         },
         body: JSON.stringify(payload),
       });
-
+  
       console.log("📬 Response status:", storyRes.status);
-
+  
       const text = await storyRes.text();
       console.log("📩 Response text:", text);
-
+  
       if (!storyRes.ok) {
         throw new Error(`Failed to create story (${storyRes.status})`);
       }
-
-      alert("🎉 Story created! Check 'My Stories' to view it.");
-      navigate("/stories");
+  
+      alert("🎉 Story created! Launching your new story...");
+  
+      // 🧭 NEW navigate logic
+      let storyId = null;
+      try {
+        const parsed = JSON.parse(text);
+        storyId = parsed.storyId || parsed.id;
+      } catch (e) {
+        console.warn("Could not parse response JSON, falling back to My Stories");
+      }
+  
+      if (storyId) {
+        navigate(`/stories/${storyId}?topic=${topic.toLowerCase()}`);
+      } else {
+        navigate("/stories");
+      }
     } catch (err) {
       console.error("❌ Error creating story:", err);
       setError(err.message);
