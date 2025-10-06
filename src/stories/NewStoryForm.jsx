@@ -1,42 +1,71 @@
 // src/stories/NewStoryForm.jsx
 // Lets the user create a new story by giving it a title + topic.
 // Automatically starts the mock AI branching story experience right after creation.
-
 import { useState } from "react";
-import { useMutation } from "../api/useMutation";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../auth/AuthContext";
 import { mockStories } from "../data/mockStories";
 
 export default function NewStoryForm() {
+  const { token } = useAuth();
+  const navigate = useNavigate();
+
   const [title, setTitle] = useState("");
   const [topic, setTopic] = useState("");
-  const { mutate, loading, error } = useMutation("/stories", "POST");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   async function handleSubmit(e) {
     e.preventDefault();
-
-    if (!title.trim() || !topic.trim()) {
-      alert("Please fill in both title and topic!");
-      return;
-    }
+    setError(null);
+    setLoading(true);
 
     try {
-      // 1️⃣ Create the story in backend
-      const newStory = await mutate({
-        title,
-        topic,
-        pages: [],
+      // choose mock story content based on topic
+      const chosenKey =
+        topic.toLowerCase().includes("dog")
+          ? "dog"
+          : topic.toLowerCase().includes("space")
+          ? "space"
+          : topic.toLowerCase().includes("castle")
+          ? "castle"
+          : "dog"; // fallback
+
+      const mockStory = mockStories[chosenKey];
+
+      const payload = {
+        title: title || mockStory.title,
+        topic: topic || chosenKey,
+        pages: mockStory.pages || [], // backend expects this field
+      };
+
+      console.log("📤 Sending story data:", payload);
+
+      const storyRes = await fetch(`${import.meta.env.VITE_API_URL}/stories`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
       });
 
-      if (newStory) {
-        // 2️⃣ Store topic in localStorage to personalize the AI story
-        localStorage.setItem("aiTopic", topic);
+      console.log("📬 Response status:", storyRes.status);
 
-        // 3️⃣ Alert user and redirect to AI story experience
-        alert("🎉 Story created! Your adventure begins now...");
-        window.location.href = "/ai-story"; // handled by StoryAI.jsx
+      const text = await storyRes.text();
+      console.log("📩 Response text:", text);
+
+      if (!storyRes.ok) {
+        throw new Error(`Failed to create story (${storyRes.status})`);
       }
+
+      alert("🎉 Story created! Check 'My Stories' to view it.");
+      navigate("/stories");
     } catch (err) {
       console.error("❌ Error creating story:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -45,23 +74,20 @@ export default function NewStoryForm() {
       <h2>✨ Create Your Adventure ✨</h2>
       <form onSubmit={handleSubmit}>
         <label>
-          Title:
+          Title
           <input
-            type="text"
-            placeholder="Something catchy..."
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            placeholder="Something catchy..."
             required
           />
         </label>
-
         <label>
-          Topic:
+          Topic
           <input
-            type="text"
-            placeholder="Adventure, Mystery, Space..."
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
+            placeholder="Dog, Space, Castle..."
             required
           />
         </label>
@@ -69,26 +95,17 @@ export default function NewStoryForm() {
         <button
           type="submit"
           disabled={loading}
-          style={{
-            background: "linear-gradient(90deg, #0077ff, #00d4ff)",
-            color: "#fff",
-            border: "none",
-            borderRadius: "10px",
-            padding: "0.6rem 1.2rem",
-            cursor: "pointer",
-            fontWeight: "600",
-            boxShadow: "0 0 10px rgba(0, 200, 255, 0.4)",
-          }}
+          style={{ marginTop: "1rem", width: "100%" }}
         >
-          {loading ? "Creating..." : "🚀 Create Story"}
+          {loading ? "⏳ Creating..." : "🚀 Create Story"}
         </button>
-      </form>
 
-      {error && (
-        <p style={{ color: "salmon", marginTop: "1rem" }}>
-          ❌ {error.message || "Something went wrong creating your story."}
-        </p>
-      )}
+        {error && (
+          <p style={{ color: "salmon", marginTop: "1rem" }}>
+            ⚠️ {error || "Failed to create story"}
+          </p>
+        )}
+      </form>
     </div>
   );
 }
