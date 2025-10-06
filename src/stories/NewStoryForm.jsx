@@ -60,7 +60,7 @@ export default function NewStoryForm() {
   
       alert("🎉 Story created! Launching your new story...");
   
-      // 🧭 NEW navigate logic
+      // NEW navigate logic
       let storyId = null;
       try {
         const parsed = JSON.parse(text);
